@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: return_window
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: return_window
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U return_window"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://return_window:test-password@127.0.0.1:5432/return_window
+      DJANGO_SECRET_KEY: ci-only-key
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py check --deploy
+        env:
+          DJANGO_DEBUG: "false"
+      - run: python manage.py test -v 2
+

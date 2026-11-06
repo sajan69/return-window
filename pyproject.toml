@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "return-window"
+version = "0.1.0"
+description = "Track user-entered purchase return deadlines"
+requires-python = ">=3.12"
+dependencies = [
+  "Django==5.2.19",
+  "psycopg[binary]==3.3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff==0.17.4",
+]
+
+[tool.setuptools.packages.find]
+include = ["config*", "purchases*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+

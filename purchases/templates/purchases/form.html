@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block content %}<section class="card form-card"><p class="eyebrow">Purchase details</p><h1>{{ heading }}</h1><p class="hint">Enter the deadline you verified. ReturnWindow does not fetch or guarantee store policies.</p><form method="post">{% csrf_token %}{{ form.as_p }}<div class="actions"><button>Save purchase</button><a href="{% url 'purchase-list' %}">Cancel</a></div></form></section>{% endblock %}
+
