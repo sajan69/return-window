@@ -18,3 +18,17 @@ class PurchaseForm(forms.ModelForm):
             "purchased_on": forms.DateInput(attrs={"type": "date"}),
             "return_by": forms.DateInput(attrs={"type": "date"}),
         }
+
+
+class CSVUploadForm(forms.Form):
+    csv_file = forms.FileField(
+        help_text="UTF-8 CSV, no more than 100 purchases or 256 KiB."
+    )
+
+    def clean_csv_file(self):
+        upload = self.cleaned_data["csv_file"]
+        if upload.size > 256 * 1024:
+            raise forms.ValidationError("CSV file must be 256 KiB or smaller.")
+        if not upload.name.lower().endswith(".csv"):
+            raise forms.ValidationError("Choose a .csv file.")
+        return upload

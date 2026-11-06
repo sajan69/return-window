@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: return-window
-Version: 0.1.0
-Summary: Track user-entered purchase return deadlines
-Requires-Python: >=3.12
-Requires-Dist: Django==5.2.19
-Requires-Dist: psycopg[binary]==3.3.8
-Provides-Extra: dev
-Requires-Dist: ruff==0.17.4; extra == "dev"

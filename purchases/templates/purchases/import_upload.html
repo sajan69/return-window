@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card form-card">
+  <p class="eyebrow">Bulk entry</p><h1>Import purchases</h1>
+  <p class="hint">Upload a UTF-8 CSV with these exact headers:</p>
+  <code>item_name,store_name,purchased_on,return_by,policy_url,notes</code>
+  <p class="hint">Dates use YYYY-MM-DD. You will review every valid row before anything is saved.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button>Review import</button></form>
+</section>
+{% endblock %}

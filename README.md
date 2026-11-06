@@ -8,6 +8,7 @@ ReturnWindow is a local web application for recording purchases and the return d
 - explicit purchase and last-return dates with a database constraint;
 - open, returned, kept and archived lifecycle states;
 - responsive deadline list and create/edit workflow;
+- reviewed UTF-8 CSV import with bounded files, strict validation and atomic confirmation;
 - PostgreSQL CI plus a SQLite option for a quick local demonstration.
 
 ## Local setup
@@ -36,4 +37,4 @@ python manage.py test
 
 ## Security and limitations
 
-Purchase records are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. The current interface has no registration flow, policy scraping, notifications, receipt processing, CSV import or calendar export. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.
+Purchase records are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. The current interface has no registration flow, policy scraping, notifications, receipt processing, CSV export or calendar export. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.

@@ -23,6 +23,7 @@ class Purchase(models.Model):
     return_by = models.DateField(help_text="The last return date entered by the owner.")
     policy_url = models.URLField(max_length=500, blank=True)
     notes = models.TextField(max_length=2000, blank=True)
+    import_fingerprint = models.CharField(max_length=64, blank=True)
     status = models.CharField(
         max_length=16, choices=PurchaseStatus, default=PurchaseStatus.OPEN
     )
@@ -36,6 +37,11 @@ class Purchase(models.Model):
             models.CheckConstraint(
                 condition=Q(return_by__gte=F("purchased_on")),
                 name="purchase_return_not_before_purchase",
+            ),
+            models.UniqueConstraint(
+                fields=["owner", "import_fingerprint"],
+                condition=~Q(import_fingerprint=""),
+                name="purchase_owner_import_fingerprint_unique",
             ),
         ]
         indexes = [

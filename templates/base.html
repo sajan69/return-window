@@ -1,6 +1,6 @@
 {% load static %}<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ReturnWindow</title><link rel="stylesheet" href="{% static 'app.css' %}"></head>
-<body><header><a href="/" class="brand">ReturnWindow</a>{% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Sign out</button></form>{% endif %}</header><main>{% block content %}{% endblock %}</main></body>
+<body><header><a href="/" class="brand">ReturnWindow</a>{% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Sign out</button></form>{% endif %}</header><main>{% if messages %}<div class="messages">{% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</main></body>
 </html>
 
