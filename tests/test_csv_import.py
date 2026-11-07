@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.core import signing
@@ -13,6 +14,13 @@ HEADER = b"item_name,store_name,purchased_on,return_by,policy_url,notes\n"
 
 
 class CSVParserTests(TestCase):
+    def test_documented_example_is_valid(self) -> None:
+        example = Path("examples/purchases.csv").read_bytes()
+        rows = parse_csv(example)
+        self.assertEqual(
+            [row.item_name for row in rows], ["Carry-on backpack", "Desk lamp"]
+        )
+
     def test_utf8_bom_and_quoted_values_are_supported(self) -> None:
         rows = parse_csv(
             b"\xef\xbb\xbf"

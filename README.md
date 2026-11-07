@@ -29,6 +29,20 @@ DJANGO_DEBUG=true python manage.py runserver
 
 Open `http://127.0.0.1:8000/` and sign in with the account you created. Set `DATABASE_URL` to a PostgreSQL URL to use PostgreSQL instead of the local SQLite demonstration database.
 
+The import screen accepts the checked [example CSV](examples/purchases.csv). It shows
+the parsed rows before anything is saved; confirm the preview to insert every row in
+one transaction. The CSV and calendar actions on the purchase list download snapshots
+of the signed-in owner's current records.
+
+## Architecture
+
+ReturnWindow is a server-rendered Django application. Django authentication owns the
+session and CSRF boundaries, while every purchase query is scoped to the signed-in
+owner. The `Purchase` model and PostgreSQL enforce date and import-identity constraints.
+CSV parsing produces immutable reviewed rows; a short-lived signed preview carries
+those rows to an atomic confirmation step. CSV and iCalendar exporters build downloads
+from owner-scoped querysets without fetching policy URLs or calling external services.
+
 ## Checks
 
 ```bash
