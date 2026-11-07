@@ -7,6 +7,7 @@ ReturnWindow is a local web application for recording purchases and the return d
 - authenticated, owner-scoped purchase records;
 - explicit purchase and last-return dates with a database constraint;
 - open, returned, kept and archived lifecycle states;
+- optimistic edit checks that preserve stale browser drafts instead of overwriting newer changes;
 - responsive deadline list and create/edit workflow;
 - reviewed UTF-8 CSV import with bounded files, strict validation and atomic confirmation;
 - owner-scoped CSV export with spreadsheet-formula neutralisation;
@@ -39,4 +40,4 @@ python manage.py test
 
 ## Security and limitations
 
-Purchase records and downloads are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. Exported text that resembles a spreadsheet formula is prefixed with a single quote; applications differ in how they handle CSV, so inspect files before sharing them. Calendar files contain open deadlines only and do not create reminders or update themselves after download. The current interface has no registration flow, policy scraping, notifications or receipt processing. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.
+Purchase records and downloads are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. Edits compare the submitted record version atomically and return a conflict page with the unsaved draft when a newer change exists. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. Exported text that resembles a spreadsheet formula is prefixed with a single quote; applications differ in how they handle CSV, so inspect files before sharing them. Calendar files contain open deadlines only and do not create reminders or update themselves after download. The current interface has no registration flow, policy scraping, notifications or receipt processing. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.

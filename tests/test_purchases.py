@@ -68,6 +68,19 @@ class PurchaseViewTests(TestCase):
         )
         self.client.force_login(self.owner)
 
+    def update_payload(self, **changes: object) -> dict[str, object]:
+        values: dict[str, object] = {
+            "item_name": self.purchase.item_name,
+            "store_name": self.purchase.store_name,
+            "purchased_on": self.purchase.purchased_on.isoformat(),
+            "return_by": self.purchase.return_by.isoformat(),
+            "policy_url": self.purchase.policy_url,
+            "notes": self.purchase.notes,
+            "version": self.purchase.version,
+        }
+        values.update(changes)
+        return values
+
     def test_list_is_scoped_to_authenticated_owner(self) -> None:
         Purchase.objects.create(
             owner=self.other,
@@ -105,6 +118,40 @@ class PurchaseViewTests(TestCase):
         )
         response = self.client.get(reverse("purchase-update", args=[foreign.pk]))
         self.assertEqual(response.status_code, 404)
+
+    def test_update_uses_the_version_rendered_with_the_form(self) -> None:
+        response = self.client.get(reverse("purchase-update", args=[self.purchase.pk]))
+
+        self.assertContains(response, 'name="version" value="1"', html=False)
+
+        response = self.client.post(
+            reverse("purchase-update", args=[self.purchase.pk]),
+            self.update_payload(item_name="Updated headphones"),
+        )
+        self.assertRedirects(response, reverse("purchase-list"))
+        self.purchase.refresh_from_db()
+        self.assertEqual(self.purchase.item_name, "Updated headphones")
+        self.assertEqual(self.purchase.version, 2)
+
+    def test_stale_update_preserves_draft_without_overwriting_saved_record(
+        self,
+    ) -> None:
+        Purchase.objects.filter(pk=self.purchase.pk).update(
+            item_name="Newer saved name", version=2
+        )
+
+        response = self.client.post(
+            reverse("purchase-update", args=[self.purchase.pk]),
+            self.update_payload(item_name="Unsaved browser draft"),
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertContains(response, "Unsaved browser draft", status_code=409)
+        self.assertContains(response, "changed after you opened it", status_code=409)
+        self.assertContains(response, "Reload saved version", status_code=409)
+        self.purchase.refresh_from_db()
+        self.assertEqual(self.purchase.item_name, "Newer saved name")
+        self.assertEqual(self.purchase.version, 2)
 
     def test_transition_requires_post_and_owner(self) -> None:
         url = reverse("purchase-transition", args=[self.purchase.pk, "returned"])

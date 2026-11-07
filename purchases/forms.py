@@ -20,6 +20,12 @@ class PurchaseForm(forms.ModelForm):
         }
 
 
+class PurchaseEditForm(PurchaseForm):
+    class Meta(PurchaseForm.Meta):
+        fields = [*PurchaseForm.Meta.fields, "version"]
+        widgets = {**PurchaseForm.Meta.widgets, "version": forms.HiddenInput()}
+
+
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField(
         help_text="UTF-8 CSV, no more than 100 purchases or 256 KiB."

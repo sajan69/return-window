@@ -4,12 +4,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .csv_import import CSVImportError, ImportRow, parse_csv
 from .exports import purchases_csv, return_calendar
-from .forms import CSVUploadForm, PurchaseForm
+from .forms import CSVUploadForm, PurchaseEditForm, PurchaseForm
 from .models import Purchase, PurchaseStatus
 
 
@@ -35,6 +37,7 @@ def purchase_create(request: HttpRequest) -> HttpResponse:
     if request.method == "POST" and form.is_valid():
         purchase = form.save(commit=False)
         purchase.owner = request.user
+        purchase.version = 1
         purchase.full_clean()
         purchase.save()
         return redirect("purchase-list")
@@ -47,13 +50,34 @@ def purchase_create(request: HttpRequest) -> HttpResponse:
 @transaction.atomic
 def purchase_update(request: HttpRequest, pk: int) -> HttpResponse:
     purchase = get_object_or_404(Purchase, pk=pk, owner=request.user)
-    form = PurchaseForm(request.POST or None, instance=purchase)
+    form = PurchaseEditForm(request.POST or None, instance=purchase)
     if request.method == "POST" and form.is_valid():
-        updated = form.save(commit=False)
-        updated.version += 1
-        updated.full_clean()
-        updated.save()
-        return redirect("purchase-list")
+        expected_version = form.cleaned_data["version"]
+        changed = Purchase.objects.filter(
+            pk=pk, owner=request.user, version=expected_version
+        ).update(
+            item_name=form.cleaned_data["item_name"],
+            store_name=form.cleaned_data["store_name"],
+            purchased_on=form.cleaned_data["purchased_on"],
+            return_by=form.cleaned_data["return_by"],
+            policy_url=form.cleaned_data["policy_url"],
+            notes=form.cleaned_data["notes"],
+            version=F("version") + 1,
+            updated_at=timezone.now(),
+        )
+        if changed:
+            return redirect("purchase-list")
+        form.add_error(
+            None,
+            "This purchase changed after you opened it. Your draft was not saved. "
+            "Reload the saved version before applying your changes.",
+        )
+        return render(
+            request,
+            "purchases/form.html",
+            {"form": form, "heading": "Edit purchase", "stale": True},
+            status=409,
+        )
     return render(
         request, "purchases/form.html", {"form": form, "heading": "Edit purchase"}
     )
@@ -70,7 +94,7 @@ def purchase_transition(request: HttpRequest, pk: int, status: str) -> HttpRespo
         return HttpResponse(status=405)
     purchase = get_object_or_404(Purchase, pk=pk, owner=request.user)
     purchase.status = status
-    purchase.version += 1
+    purchase.version = F("version") + 1
     purchase.save(update_fields=["status", "version", "updated_at"])
     return redirect("purchase-list")
 
