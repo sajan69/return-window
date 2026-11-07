@@ -49,6 +49,12 @@ python -m playwright install chromium
 python manage.py test tests.browser_workflow
 ```
 
+## Evaluation
+
+The [CSV import benchmark](docs/BENCHMARK.md) records five fresh-process runs of the
+documented 100-row limit on PostgreSQL, including raw phase timings, workload and
+environment identity, and measurement limitations.
+
 ## Security and limitations
 
 Purchase records and downloads are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. Edits compare the submitted record version atomically and return a conflict page with the unsaved draft when a newer change exists. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. Exported text that resembles a spreadsheet formula is prefixed with a single quote; applications differ in how they handle CSV, so inspect files before sharing them. Calendar files contain open deadlines only and do not create reminders or update themselves after download. Browser checks use Chromium only and do not establish full accessibility or cross-browser compatibility. The current interface has no registration flow, policy scraping, notifications or receipt processing. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.

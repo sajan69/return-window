@@ -2,8 +2,8 @@
   "name": "return-window-quality",
   "private": true,
   "scripts": {
-    "format": "prettier --write README.md static/app.css .github/workflows/ci.yml package.json",
-    "format:check": "prettier --check README.md static/app.css .github/workflows/ci.yml package.json",
+    "format": "prettier --write README.md docs/**/*.md examples/**/*.json static/app.css .github/workflows/ci.yml package.json",
+    "format:check": "prettier --check README.md docs/**/*.md examples/**/*.json static/app.css .github/workflows/ci.yml package.json",
     "links": "linkinator README.md --markdown --recurse --concurrency 8 --timeout 20000 --retry-errors --retry-errors-count 2 --verbosity info"
   },
   "devDependencies": {

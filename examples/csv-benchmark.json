@@ -1,0 +1,131 @@
+{
+  "benchmark": "csv-import-100-v1",
+  "completed": true,
+  "environment": {
+    "database_vendor": "postgresql",
+    "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "django": "5.2.19",
+    "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+    "psycopg": "3.3.8",
+    "python": "3.12.16"
+  },
+  "limits": [
+    "Shared CI runner observations are not production capacity or an SLO.",
+    "The workload exercises the documented 100-row ceiling only.",
+    "Database caches are not dropped between workers; no cold-cache claim is made.",
+    "Peak RSS is process-lifetime high-water memory, not an allocation by one phase."
+  ],
+  "method": {
+    "excluded": [
+      "Python and Django import/startup",
+      "user creation and cleanup",
+      "HTTP upload, authentication, signing, rendering, and network time",
+      "database migration and dependency installation"
+    ],
+    "measured_phases": [
+      "parse_ns",
+      "model_validation_ns",
+      "atomic_insert_ns",
+      "verify_ns"
+    ],
+    "process_model": "five sequential fresh Python worker processes",
+    "repetitions": 5,
+    "replacement_policy": "no retries, replacements, or excluded workers"
+  },
+  "schema_version": 1,
+  "summary": {
+    "atomic_insert_ns": {
+      "max_ns": 5516231,
+      "median_ns": 5448160,
+      "min_ns": 5214511
+    },
+    "measured_total_ns": {
+      "max_ns": 191189663,
+      "median_ns": 179548488,
+      "min_ns": 170593180
+    },
+    "model_validation_ns": {
+      "max_ns": 159601926,
+      "median_ns": 153131331,
+      "min_ns": 144439049
+    },
+    "parse_ns": {
+      "max_ns": 25382046,
+      "median_ns": 20117485,
+      "min_ns": 19993015
+    },
+    "verify_ns": {
+      "max_ns": 833297,
+      "median_ns": 732835,
+      "min_ns": 692855
+    }
+  },
+  "workers": [
+    {
+      "atomic_insert_ns": 5516231,
+      "database_vendor": "postgresql",
+      "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+      "inserted_rows": 100,
+      "measured_total_ns": 179548488,
+      "model_validation_ns": 153131331,
+      "parse_ns": 20067629,
+      "peak_process_rss_bytes": 62742528,
+      "repetition": 0,
+      "verify_ns": 833297
+    },
+    {
+      "atomic_insert_ns": 5214511,
+      "database_vendor": "postgresql",
+      "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+      "inserted_rows": 100,
+      "measured_total_ns": 185866910,
+      "model_validation_ns": 157807620,
+      "parse_ns": 22111944,
+      "peak_process_rss_bytes": 62558208,
+      "repetition": 1,
+      "verify_ns": 732835
+    },
+    {
+      "atomic_insert_ns": 5458233,
+      "database_vendor": "postgresql",
+      "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+      "inserted_rows": 100,
+      "measured_total_ns": 191189663,
+      "model_validation_ns": 159601926,
+      "parse_ns": 25382046,
+      "peak_process_rss_bytes": 62533632,
+      "repetition": 2,
+      "verify_ns": 747458
+    },
+    {
+      "atomic_insert_ns": 5310708,
+      "database_vendor": "postgresql",
+      "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+      "inserted_rows": 100,
+      "measured_total_ns": 173680406,
+      "model_validation_ns": 147559358,
+      "parse_ns": 20117485,
+      "peak_process_rss_bytes": 62726144,
+      "repetition": 3,
+      "verify_ns": 692855
+    },
+    {
+      "atomic_insert_ns": 5448160,
+      "database_vendor": "postgresql",
+      "database_version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+      "inserted_rows": 100,
+      "measured_total_ns": 170593180,
+      "model_validation_ns": 144439049,
+      "parse_ns": 19993015,
+      "peak_process_rss_bytes": 62685184,
+      "repetition": 4,
+      "verify_ns": 712956
+    }
+  ],
+  "workload": {
+    "csv_bytes": 11871,
+    "csv_sha256": "578f8dc9a8e7a5f95ab25ac9c05a67d82bfadc9b4f8d3532d093849aec499f1a",
+    "data": "deterministic synthetic purchase records; no personal data",
+    "rows": 100
+  }
+}
