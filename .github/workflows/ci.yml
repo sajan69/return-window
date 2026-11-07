@@ -81,3 +81,38 @@ jobs:
           path: artifacts/browser/*.png
           if-no-files-found: error
           retention-days: 7
+
+  benchmark:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: return_window
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: return_window_benchmark
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U return_window"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://return_window:test-password@127.0.0.1:5432/return_window_benchmark
+      DJANGO_SECRET_KEY: ci-benchmark-key
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python manage.py migrate --noinput
+      - run: python -m purchases.csv_benchmark --output artifacts/csv-benchmark.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: return-window-csv-benchmark
+          path: artifacts/csv-benchmark.json
+          if-no-files-found: error
+          retention-days: 7
