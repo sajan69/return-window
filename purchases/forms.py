@@ -15,8 +15,8 @@ class PurchaseForm(forms.ModelForm):
             "notes",
         ]
         widgets = {
-            "purchased_on": forms.DateInput(attrs={"type": "date"}),
-            "return_by": forms.DateInput(attrs={"type": "date"}),
+            "purchased_on": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+            "return_by": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
         }
 
 

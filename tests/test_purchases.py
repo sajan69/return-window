@@ -123,6 +123,10 @@ class PurchaseViewTests(TestCase):
         response = self.client.get(reverse("purchase-update", args=[self.purchase.pk]))
 
         self.assertContains(response, 'name="version" value="1"', html=False)
+        self.assertContains(
+            response, 'name="purchased_on" value="2026-11-01"', html=False
+        )
+        self.assertContains(response, 'name="return_by" value="2026-11-20"', html=False)
 
         response = self.client.post(
             reverse("purchase-update", args=[self.purchase.pk]),
