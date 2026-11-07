@@ -1,4 +1,3 @@
-from datetime import date
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -10,35 +9,25 @@ from playwright.sync_api import (
     sync_playwright,
 )
 
-from purchases.models import Purchase
-
 SCREENSHOTS = Path("artifacts/browser")
 
 
 class BrowserWorkflowTests(StaticLiveServerTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        SCREENSHOTS.mkdir(parents=True, exist_ok=True)
-        cls.playwright: Playwright = sync_playwright().start()
-        cls.browser: Browser = cls.playwright.chromium.launch()
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.browser.close()
-        cls.playwright.stop()
-        super().tearDownClass()
-
     def setUp(self) -> None:
         self.user = get_user_model().objects.create_user(
             username="browser-owner", password="browser-password"
         )
+        SCREENSHOTS.mkdir(parents=True, exist_ok=True)
+        self.playwright: Playwright = sync_playwright().start()
+        self.browser: Browser = self.playwright.chromium.launch()
         self.context = self.browser.new_context(accept_downloads=True)
         self.page = self.context.new_page()
         self.sign_in(self.page)
 
     def tearDown(self) -> None:
         self.context.close()
+        self.browser.close()
+        self.playwright.stop()
 
     def sign_in(self, page: Page) -> None:
         page.goto(f"{self.live_server_url}/accounts/login/")
@@ -47,16 +36,14 @@ class BrowserWorkflowTests(StaticLiveServerTestCase):
         page.get_by_role("button", name="Sign in").click()
         page.get_by_role("heading", name="Return deadlines").wait_for()
 
-    def make_purchase(self, **changes: object) -> Purchase:
-        values = {
-            "owner": self.user,
-            "item_name": "Desk lamp",
-            "store_name": "Example Home",
-            "purchased_on": date(2026, 11, 1),
-            "return_by": date(2026, 11, 30),
-        }
-        values.update(changes)
-        return Purchase.objects.create(**values)
+    def create_purchase(self, page: Page, item_name: str) -> None:
+        page.get_by_role("link", name="Add purchase").click()
+        page.get_by_label("Item name").fill(item_name)
+        page.get_by_label("Store name").fill("Example Home")
+        page.get_by_label("Purchased on").fill("2026-11-01")
+        page.get_by_label("Return by").fill("2026-11-30")
+        page.get_by_role("button", name="Save purchase").click()
+        page.get_by_role("heading", name=item_name).wait_for()
 
     def test_desktop_create_edit_transition_and_filter(self) -> None:
         self.page.get_by_role("link", name="Add purchase").click()
@@ -78,12 +65,18 @@ class BrowserWorkflowTests(StaticLiveServerTestCase):
         self.page.screenshot(path=SCREENSHOTS / "desktop.png", full_page=True)
 
     def test_stale_draft_import_and_downloads(self) -> None:
-        purchase = self.make_purchase()
-        self.page.reload()
+        self.create_purchase(self.page, "Desk lamp")
         self.page.get_by_role("link", name="Edit").click()
-        Purchase.objects.filter(pk=purchase.pk).update(
-            item_name="Newer saved lamp", version=2
-        )
+
+        newer_context = self.browser.new_context()
+        newer_page = newer_context.new_page()
+        self.sign_in(newer_page)
+        newer_page.get_by_role("link", name="Edit").click()
+        newer_page.get_by_label("Item name").fill("Newer saved lamp")
+        newer_page.get_by_role("button", name="Save purchase").click()
+        newer_page.get_by_role("heading", name="Newer saved lamp").wait_for()
+        newer_context.close()
+
         self.page.get_by_label("Item name").fill("Unsaved lamp draft")
         self.page.get_by_role("button", name="Save purchase").click()
         self.page.get_by_role("alert").wait_for()
