@@ -8,6 +8,9 @@ from playwright.sync_api import (
     Playwright,
     sync_playwright,
 )
+from playwright.sync_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
 
 SCREENSHOTS = Path("artifacts/browser")
 
@@ -43,7 +46,16 @@ class BrowserWorkflowTests(StaticLiveServerTestCase):
         page.get_by_label("Purchased on").fill("2026-11-01")
         page.get_by_label("Return by").fill("2026-11-30")
         page.get_by_role("button", name="Save purchase").click()
-        page.get_by_role("heading", name=item_name).wait_for()
+        self.assert_heading(page, item_name)
+
+    def assert_heading(self, page: Page, name: str) -> None:
+        try:
+            page.get_by_role("heading", name=name).wait_for(timeout=5_000)
+        except PlaywrightTimeoutError as error:
+            body = page.locator("body").inner_text()
+            raise AssertionError(
+                f"Expected heading {name!r} at {page.url}. Page text:\n{body}"
+            ) from error
 
     def test_desktop_create_edit_transition_and_filter(self) -> None:
         self.page.get_by_role("link", name="Add purchase").click()
@@ -57,11 +69,11 @@ class BrowserWorkflowTests(StaticLiveServerTestCase):
         self.page.get_by_role("link", name="Edit").click()
         self.page.get_by_label("Item name").fill("Carry-on backpack")
         self.page.get_by_role("button", name="Save purchase").click()
-        self.page.get_by_role("heading", name="Carry-on backpack").wait_for()
+        self.assert_heading(self.page, "Carry-on backpack")
 
         self.page.get_by_role("button", name="Returned").click()
         self.page.locator("nav.filters a", has_text="Returned").click()
-        self.page.get_by_role("heading", name="Carry-on backpack").wait_for()
+        self.assert_heading(self.page, "Carry-on backpack")
         self.page.screenshot(path=SCREENSHOTS / "desktop.png", full_page=True)
 
     def test_stale_draft_import_and_downloads(self) -> None:
@@ -74,7 +86,7 @@ class BrowserWorkflowTests(StaticLiveServerTestCase):
         newer_page.get_by_role("link", name="Edit").click()
         newer_page.get_by_label("Item name").fill("Newer saved lamp")
         newer_page.get_by_role("button", name="Save purchase").click()
-        newer_page.get_by_role("heading", name="Newer saved lamp").wait_for()
+        self.assert_heading(newer_page, "Newer saved lamp")
         newer_context.close()
 
         self.page.get_by_label("Item name").fill("Unsaved lamp draft")
