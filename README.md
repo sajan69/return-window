@@ -9,6 +9,8 @@ ReturnWindow is a local web application for recording purchases and the return d
 - open, returned, kept and archived lifecycle states;
 - responsive deadline list and create/edit workflow;
 - reviewed UTF-8 CSV import with bounded files, strict validation and atomic confirmation;
+- owner-scoped CSV export with spreadsheet-formula neutralisation;
+- downloadable iCalendar events for open return deadlines;
 - PostgreSQL CI plus a SQLite option for a quick local demonstration.
 
 ## Local setup
@@ -37,4 +39,4 @@ python manage.py test
 
 ## Security and limitations
 
-Purchase records are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. The current interface has no registration flow, policy scraping, notifications, receipt processing, CSV export or calendar export. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.
+Purchase records and downloads are always queried through the authenticated owner. State changes require POST requests and Django CSRF protection. A production deployment must supply a strong `DJANGO_SECRET_KEY`, configure allowed hosts, use HTTPS and operate PostgreSQL with backups. CSV imports require the exact header order shown in the interface, accept at most 100 rows and 256 KiB, and are rejected as a whole when validation or duplicate checks fail. Exported text that resembles a spreadsheet formula is prefixed with a single quote; applications differ in how they handle CSV, so inspect files before sharing them. Calendar files contain open deadlines only and do not create reminders or update themselves after download. The current interface has no registration flow, policy scraping, notifications or receipt processing. Dates are user-entered and ReturnWindow does not guarantee eligibility, refunds or store policy accuracy.

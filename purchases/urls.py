@@ -6,6 +6,12 @@ urlpatterns = [
     path("", views.purchase_list, name="purchase-list"),
     path("purchases/new/", views.purchase_create, name="purchase-create"),
     path("purchases/import/", views.import_preview, name="purchase-import"),
+    path("purchases/export.csv", views.export_csv, name="purchase-export-csv"),
+    path(
+        "purchases/deadlines.ics",
+        views.export_calendar,
+        name="purchase-export-calendar",
+    ),
     path(
         "purchases/import/confirm/",
         views.import_confirm,

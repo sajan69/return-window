@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .csv_import import CSVImportError, ImportRow, parse_csv
+from .exports import purchases_csv, return_calendar
 from .forms import CSVUploadForm, PurchaseForm
 from .models import Purchase, PurchaseStatus
 
@@ -152,3 +153,31 @@ def import_confirm(request: HttpRequest) -> HttpResponse:
         return redirect("purchase-import")
     messages.success(request, f"Imported {len(purchases)} purchases.")
     return redirect("purchase-list")
+
+
+@login_required
+def export_csv(request: HttpRequest) -> HttpResponse:
+    purchases = list(Purchase.objects.filter(owner=request.user))
+    response = HttpResponse(
+        purchases_csv(purchases), content_type="text/csv; charset=utf-8"
+    )
+    response["Content-Disposition"] = (
+        'attachment; filename="return-window-purchases.csv"'
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+@login_required
+def export_calendar(request: HttpRequest) -> HttpResponse:
+    purchases = list(
+        Purchase.objects.filter(owner=request.user, status=PurchaseStatus.OPEN)
+    )
+    response = HttpResponse(
+        return_calendar(purchases), content_type="text/calendar; charset=utf-8"
+    )
+    response["Content-Disposition"] = (
+        'attachment; filename="return-window-deadlines.ics"'
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
